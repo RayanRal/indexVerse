@@ -3,9 +3,9 @@ package com.gmail.rayanral.index.model
 import com.gmail.rayanral.index.model.GenericDocument.DELIMITER
 
 case class GenericDocument(
-  filePath: String,
-  fileName: String,
-  text: String
+    filePath: String,
+    fileName: String,
+    text: String
 ) {
 
   def this(filePath: String, text: String) =

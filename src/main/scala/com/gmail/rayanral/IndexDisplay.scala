@@ -1,5 +1,3 @@
 package com.gmail.rayanral
 
-object IndexDisplay {
-
-}
+object IndexDisplay {}

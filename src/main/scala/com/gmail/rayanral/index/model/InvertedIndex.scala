@@ -10,6 +10,17 @@ class InvertedIndex(private val tokenIndex: mutable.Map[String, mutable.Set[Stri
         .withDefaultValue(mutable.Set.empty[String])
     )
 
+  def getFilesForToken(token: String): Set[String] = tokenIndex.getOrElse(token, Set.empty[String]).toSet
+
+  def mergeInPlace(other: InvertedIndex): InvertedIndex = {
+    other.tokenIndex.flatMap { case (k, set) =>
+      set.map(v => (k, v))
+    }.foreach { case (token, filename) =>
+      add(token, filename)
+    }
+    this
+  }
+
   def add(token: String, filename: String): Unit = {
     if (token == null) return
     tokenIndex.updateWith(token) {
@@ -21,25 +32,11 @@ class InvertedIndex(private val tokenIndex: mutable.Map[String, mutable.Set[Stri
     }
   }
 
-  def size: Int = tokenIndex.size
-
-  def getTopWords(count: Int): List[String] =
-    tokenIndex.toList.sortBy(_._2.size).reverse.map(_._1).take(count)
-
-  def getFilesForToken(token: String): Set[String] = tokenIndex.getOrElse(token, Set.empty[String]).toSet
-
-  def mergeInPlace(other: InvertedIndex): InvertedIndex = {
-    other.tokenIndex.flatMap { case (k, set) =>
-      set.map { v => (k, v) }
-    }.foreach { case (token, filename) =>
-      add(token, filename)
-    }
-    this
-  }
-
-  def printableInvertedIndex(): String = {
+  def printableInvertedIndex(): String =
     getTopWords(3).mkString("InvertedIndex top 3 words:\n<", ", ", ">")
-  }
+
+  def getTopWords(count: Int): List[(String, Int)] =
+    tokenIndex.toList.sortBy(_._2.size).reverse.map { case (token, docs) => token -> docs.size }.take(count)
 
 //  def writeToFile(outputPath: String): Unit = {
 //    try {
