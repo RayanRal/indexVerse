@@ -4,19 +4,23 @@ import java.util.regex.Pattern
 
 object StringUtils {
 
-  def getStopwords: Set[String] = {
-    val stopwords = "a,the,and,of,to,is,in,/><br"
-    stopwords.split(",").toSet
+  def getStopWords: Set[String] = {
+    val stopWords = "a,the,and,of,to,is,in,/><br"
+    stopWords.split(",").toSet
   }
 
-  def removeTags(input: String): String = {
-    val noTags = Pattern.compile("<.*?>")
-    noTags.matcher(input).replaceAll("")
-  }
+  implicit class StringExt(input: String) {
 
-  def removeNumbers(input: String): String = {
-    val noNumber = Pattern.compile("[^a-z|A-Z]")
-    noNumber.matcher(input).replaceAll("")
+    def removeTags(): String = {
+      val noTags = Pattern.compile("<.*?>")
+      noTags.matcher(input).replaceAll("")
+    }
+
+    def removeNumbers(): String = {
+      val noNumber = Pattern.compile("[^a-z|A-Z]")
+      noNumber.matcher(input).replaceAll("")
+    }
+
   }
 
 }

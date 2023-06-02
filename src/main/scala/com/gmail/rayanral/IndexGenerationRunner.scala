@@ -2,17 +2,18 @@ package com.gmail.rayanral
 
 import com.gmail.rayanral.index.IndexGenerator
 import com.gmail.rayanral.index.util.{Config, FileOps}
+import org.apache.logging.log4j.scala.Logging
 
 import scala.collection.parallel.CollectionConverters._
 
-object IndexGenerationRunner {
+object IndexGenerationRunner extends Logging {
 
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[Config]("indexVerse") {}
     parser.parse(args, Config()) match {
       case Some(config) =>
-        println("Config parsed successfully. Starting index.")
-        println(s"""Threads: ${config.numberOfIndexerThreads}
+        logger.info("Config parsed successfully. Starting indexer.")
+        logger.info(s"""Threads: ${config.numberOfIndexerThreads}
                    |Input directory: ${config.inputDir}
                    |Input extension: ${config.fileExtension}
                    |Output path: ${config.outputPath}
@@ -36,7 +37,7 @@ object IndexGenerationRunner {
       .reduce { (i1, i2) =>
         i1.mergeInPlace(i2)
       }
-    println(index.printableInvertedIndex())
+    logger.info(IndexDisplay.printTopWords(index))
   }
 
   private def getGroupSize(filesToIndex: List[String], numThreads: Int): Int = {

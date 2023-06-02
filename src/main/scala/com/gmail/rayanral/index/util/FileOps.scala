@@ -1,11 +1,14 @@
 package com.gmail.rayanral.index.util
 
-import com.gmail.rayanral.index.model.{DirectoryNotFoundException, GenericDocument}
+import com.gmail.rayanral.index.model.{DirectoryNotFoundException, GenericDocument, InvertedIndex}
+import io.github.vigoo.desert._
+import io.github.vigoo.desert.internal.JavaStreamBinaryOutput
+import org.apache.logging.log4j.scala.Logging
 
-import java.io.{File, FilenameFilter}
+import java.io.{ByteArrayOutputStream, File, FilenameFilter}
 import java.nio.file.{Files, Paths}
 
-object FileOps {
+object FileOps extends Logging {
 
   def readFile(filename: String): GenericDocument = {
     val text = Files.readString(Paths.get(filename))
@@ -17,6 +20,23 @@ object FileOps {
       case Left(v)         => throw v
       case Right(fileList) => fileList
     }
+
+  /*
+  Serializes index to disk
+   */
+  def writeIndexToFile(index: InvertedIndex, outputPath: String): Unit = {
+    val stream = new ByteArrayOutputStream()
+    val output = new JavaStreamBinaryOutput(stream)
+    serializeToArray(index.getIndex) match {
+      case Left(failure) =>
+        logger.error(s"Failed to write index: ${failure.message}")
+      case Right(bytes) =>
+        output.writeBytes(bytes)
+        stream.flush()
+        Files.write(java.nio.file.Paths.get(outputPath), stream.toByteArray)
+    }
+
+  }
 
   /**
    * Look for files matching an extension in a given folder

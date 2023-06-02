@@ -10,8 +10,6 @@ class InvertedIndex(private val tokenIndex: mutable.Map[String, mutable.Set[Stri
         .withDefaultValue(mutable.Set.empty[String])
     )
 
-  def getFilesForToken(token: String): Set[String] = tokenIndex.getOrElse(token, Set.empty[String]).toSet
-
   def mergeInPlace(other: InvertedIndex): InvertedIndex = {
     other.tokenIndex.flatMap { case (k, set) =>
       set.map(v => (k, v))
@@ -32,23 +30,14 @@ class InvertedIndex(private val tokenIndex: mutable.Map[String, mutable.Set[Stri
     }
   }
 
-  def printableInvertedIndex(): String =
-    getTopWords(3).mkString("InvertedIndex top 3 words:\n<", ", ", ">")
-
   def getTopWords(count: Int): List[(String, Int)] =
     tokenIndex.toList.sortBy(_._2.size).reverse.map { case (token, docs) => token -> docs.size }.take(count)
 
-//  def writeToFile(outputPath: String): Unit = {
-//    try {
-//      val oos = new Nothing(new Nothing(outputPath))
-//      try {
-//        oos.writeObject(tokenIndex)
-//        oos.flush
-//      } catch {
-//        case e: Nothing =>
-//          e.printStackTrace
-//      } finally if (oos != null) oos.close()
-//    }
-//  }
+  /*
+  returns immutable copy of underlying index, for serialization / backup
+   */
+  def getIndex: Map[String, Set[String]] = tokenIndex.view.mapValues(s => s.toSet).toMap
+
+  def getFilesForToken(token: String): Set[String] = tokenIndex.getOrElse(token, Set.empty[String]).toSet
 
 }
