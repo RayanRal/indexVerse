@@ -23,4 +23,7 @@ libraryDependencies ++= Seq(
   "org.apache.logging.log4j" % "log4j-core" % "2.20.0" % Runtime
 )
 
+// benchmarking
+enablePlugins(JmhPlugin)
+
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.15" % "test"

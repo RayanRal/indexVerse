@@ -1,6 +1,7 @@
 package com.gmail.rayanral
 
 import com.gmail.rayanral.index.IndexGenerator
+import com.gmail.rayanral.index.model.InvertedIndex
 import com.gmail.rayanral.index.util.{Config, FileOps}
 import org.apache.logging.log4j.scala.Logging
 
@@ -18,15 +19,16 @@ object IndexGenerationRunner extends Logging {
                    |Input extension: ${config.fileExtension}
                    |Output path: ${config.outputPath}
                    |""".stripMargin)
-        runIndexer(config.inputDir, config.fileExtension, config.numberOfIndexerThreads)
+        val index = runIndexer(config.inputDir, config.fileExtension, config.numberOfIndexerThreads)
+        logger.info(IndexDisplay.printTopWords(index))
       case None =>
     }
   }
 
-  private def runIndexer(inputDir: String, extension: String, numThreads: Int): Unit = {
+  def runIndexer(inputDir: String, extension: String, numThreads: Int): InvertedIndex = {
     val filesToIndex = FileOps.getFilesToIndex(inputDir, extension)
     val groupSize = getGroupSize(filesToIndex, numThreads)
-    val index = filesToIndex
+    filesToIndex
       .grouped(groupSize)
       .toList
       .par
@@ -37,7 +39,6 @@ object IndexGenerationRunner extends Logging {
       .reduce { (i1, i2) =>
         i1.mergeInPlace(i2)
       }
-    logger.info(IndexDisplay.printTopWords(index))
   }
 
   private def getGroupSize(filesToIndex: List[String], numThreads: Int): Int = {

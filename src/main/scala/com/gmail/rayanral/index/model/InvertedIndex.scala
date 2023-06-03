@@ -10,15 +10,6 @@ class InvertedIndex(private val tokenIndex: mutable.Map[String, mutable.Set[Stri
         .withDefaultValue(mutable.Set.empty[String])
     )
 
-  def mergeInPlace(other: InvertedIndex): InvertedIndex = {
-    other.tokenIndex.flatMap { case (k, set) =>
-      set.map(v => (k, v))
-    }.foreach { case (token, filename) =>
-      add(token, filename)
-    }
-    this
-  }
-
   def add(token: String, filename: String): Unit = {
     if (token == null) return
     tokenIndex.updateWith(token) {
@@ -39,5 +30,14 @@ class InvertedIndex(private val tokenIndex: mutable.Map[String, mutable.Set[Stri
   def getIndex: Map[String, Set[String]] = tokenIndex.view.mapValues(s => s.toSet).toMap
 
   def getFilesForToken(token: String): Set[String] = tokenIndex.getOrElse(token, Set.empty[String]).toSet
+
+  def mergeInPlace(other: InvertedIndex): InvertedIndex = {
+    other.tokenIndex.flatMap { case (k, set) =>
+      set.map(v => (k, v))
+    }.foreach { case (token, filename) =>
+      add(token, filename)
+    }
+    this
+  }
 
 }
