@@ -17,19 +17,24 @@ class InvertedIndex(private val tokenIndex: mutable.Map[String, mutable.Set[Stri
         set.add(filename)
         Some(set)
       case None =>
-        Some(mutable.Set.empty[String])
+        Some(mutable.Set(filename))
     }
   }
 
   def getTopWords(count: Int): List[(String, Int)] =
     tokenIndex.toList.sortBy(_._2.size).reverse.map { case (token, docs) => token -> docs.size }.take(count)
 
+  def doesWordExist(token: String): Boolean = tokenIndex.contains(token)
+
+  def getDocumentsForToken(token: String): Set[String] = tokenIndex.getOrElse(token, Set.empty[String]).toSet
+
+  def getDocumentsForTokens(tokens: Set[String]): Set[String] =
+    tokens.map(getDocumentsForToken).reduce { (d1: Set[String], d2: Set[String]) => d1.intersect(d2) }
+
   /*
-  returns immutable copy of underlying index, for serialization / backup
+   returns immutable copy of underlying index, for serialization / backup
    */
   def getIndex: Map[String, Set[String]] = tokenIndex.view.mapValues(s => s.toSet).toMap
-
-  def getFilesForToken(token: String): Set[String] = tokenIndex.getOrElse(token, Set.empty[String]).toSet
 
   def mergeInPlace(other: InvertedIndex): InvertedIndex = {
     other.tokenIndex.flatMap { case (k, set) =>

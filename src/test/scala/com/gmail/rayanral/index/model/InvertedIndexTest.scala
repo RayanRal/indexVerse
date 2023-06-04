@@ -20,4 +20,29 @@ class InvertedIndexTest extends AnyFlatSpec {
     index.getTopWords(1).head._1 shouldBe duplicate
   }
 
+  "invertedIndex" should "lookup document given single word" in {
+    val index = new InvertedIndex()
+    val indexedWord = "word"
+    index.add(indexedWord, "file")
+    val docs = index.getDocumentsForToken(indexedWord)
+    docs.size shouldBe 1
+    docs should contain("file")
+  }
+
+  "invertedIndex" should "lookup document given multiple words" in {
+    val index = new InvertedIndex()
+    index.add("word", "file")
+    index.add("word2", "file2")
+    index.add("word3", "file")
+    val docs = index.getDocumentsForTokens(Set("word", "word3"))
+    docs.size shouldBe 1
+    docs should contain("file")
+  }
+
+  "invertedIndex" should "return empty when word doesn't exist" in {
+    val index = new InvertedIndex()
+    val docs = index.getDocumentsForToken("nonExistingWord")
+    docs.size shouldBe 0
+  }
+
 }
