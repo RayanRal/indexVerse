@@ -6,27 +6,21 @@ import com.gmail.rayanral.index.util.StringUtils
 import com.gmail.rayanral.index.util.StringUtils.StringExt
 import org.apache.logging.log4j.scala.Logging
 
-import java.util.StringTokenizer
-
 class IndexGenerator(filesToIndex: List[String]) extends Logging {
-
-  private val index = InvertedIndex()
 
   def generateIndex(): InvertedIndex = {
     logger.info("Indexer started")
-    filesToIndex.foreach { fileName =>
-      val doc = readFile(fileName)
-      processDocument(index, doc)
+    filesToIndex.map(readFile).foldLeft(InvertedIndex()) { case (idx, doc) =>
+      val updIdx = processDocument(idx, doc)
+      updIdx
     }
-    index
   }
 
-  private def processDocument(index: InvertedIndex, document: GenericDocument): Unit = {
-    val st = new StringTokenizer(document.text)
-    while (st.hasMoreTokens) {
-      processToken(st.nextToken).foreach(t => index.add(t, document.fileName))
-    }
-  }
+  private def processDocument(index: InvertedIndex, document: GenericDocument): InvertedIndex =
+    document.text
+      .split(" ")
+      .flatMap(processToken)
+      .foldLeft(index)(_.add(_, document.fileName))
 
   private def processToken(token: String): Option[String] = {
     val tokenLower = token.toLowerCase
