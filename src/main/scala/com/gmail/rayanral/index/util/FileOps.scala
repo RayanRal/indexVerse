@@ -2,10 +2,10 @@ package com.gmail.rayanral.index.util
 
 import com.gmail.rayanral.index.model.{DirectoryNotFoundException, GenericDocument, InvertedIndex}
 import io.github.vigoo.desert._
-import io.github.vigoo.desert.internal.JavaStreamBinaryOutput
+import io.github.vigoo.desert.internal.{JavaStreamBinaryInput, JavaStreamBinaryOutput}
 import org.apache.logging.log4j.scala.Logging
 
-import java.io.{ByteArrayOutputStream, File, FilenameFilter}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File, FileInputStream, FilenameFilter}
 import java.nio.file.{Files, Paths}
 
 object FileOps extends Logging {
@@ -22,7 +22,7 @@ object FileOps extends Logging {
     }
 
   /*
-  Serializes index to disk
+   * Serializes index to disk
    */
   def writeIndexToFile(index: InvertedIndex, outputPath: String): Unit = {
     val stream = new ByteArrayOutputStream()
@@ -35,7 +35,17 @@ object FileOps extends Logging {
         stream.flush()
         Files.write(java.nio.file.Paths.get(outputPath), stream.toByteArray)
     }
+  }
 
+  def loadIndexFromFile(inputPath: String): Option[InvertedIndex] = {
+    val bytes = new FileInputStream(inputPath).readAllBytes()
+    deserializeFromArray[Map[String, Set[String]]](bytes) match {
+      case Left(failure) =>
+        logger.error(s"Failed to write index: ${failure.message}")
+        None
+      case Right(tokenIndex) =>
+        Some(InvertedIndex(tokenIndex))
+    }
   }
 
   /**
