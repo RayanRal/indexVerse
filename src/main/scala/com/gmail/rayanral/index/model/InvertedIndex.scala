@@ -1,23 +1,20 @@
 package com.gmail.rayanral.index.model
 
-import scala.collection.mutable
+import scala.collection.immutable.HashMap
 
-class InvertedIndex(private val tokenIndex: mutable.Map[String, mutable.Set[String]]) {
+case class InvertedIndex(
+    tokenIndex: Map[String, Set[String]] =
+      HashMap[String, Set[String]]()
+) {
 
-  def this() =
-    this(
-      new mutable.HashMap[String, mutable.Set[String]]()
-        .withDefaultValue(mutable.Set.empty[String])
-    )
-
-  def add(token: String, filename: String): Unit = {
-    if (token == null) return
-    tokenIndex.updateWith(token) {
+  def add(token: String, filename: String): InvertedIndex = {
+    if (token == null) return this
+    tokenIndex.get(token) match {
       case Some(set) =>
-        set.add(filename)
-        Some(set)
+        val newSet = set + filename
+        InvertedIndex(tokenIndex.updated(token, newSet))
       case None =>
-        Some(mutable.Set(filename))
+        InvertedIndex(tokenIndex.updated(token, Set(filename)))
     }
   }
 
@@ -26,15 +23,10 @@ class InvertedIndex(private val tokenIndex: mutable.Map[String, mutable.Set[Stri
 
   def doesWordExist(token: String): Boolean = tokenIndex.contains(token)
 
-  def getDocumentsForToken(token: String): Set[String] = tokenIndex.getOrElse(token, Set.empty[String]).toSet
+  def getDocumentsForToken(token: String): Set[String] = tokenIndex.getOrElse(token, Set.empty[String])
 
   def getDocumentsForTokens(tokens: Set[String]): Set[String] =
-    tokens.map(getDocumentsForToken).reduce { (d1: Set[String], d2: Set[String]) => d1.intersect(d2) }
-
-  /*
-   returns immutable copy of underlying index, for serialization / backup
-   */
-  def getIndex: Map[String, Set[String]] = tokenIndex.view.mapValues(s => s.toSet).toMap
+    tokens.map(getDocumentsForToken).reduce((d1: Set[String], d2: Set[String]) => d1.intersect(d2))
 
   def mergeInPlace(other: InvertedIndex): InvertedIndex = {
     other.tokenIndex.flatMap { case (k, set) =>

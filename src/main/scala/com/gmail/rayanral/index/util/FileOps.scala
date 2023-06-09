@@ -27,7 +27,7 @@ object FileOps extends Logging {
   def writeIndexToFile(index: InvertedIndex, outputPath: String): Unit = {
     val stream = new ByteArrayOutputStream()
     val output = new JavaStreamBinaryOutput(stream)
-    serializeToArray(index.getIndex) match {
+    serializeToArray(index.tokenIndex) match {
       case Left(failure) =>
         logger.error(s"Failed to write index: ${failure.message}")
       case Right(bytes) =>
