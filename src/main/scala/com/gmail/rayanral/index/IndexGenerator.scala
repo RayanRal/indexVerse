@@ -10,7 +10,7 @@ import java.util.StringTokenizer
 
 class IndexGenerator(filesToIndex: List[String]) extends Logging {
 
-  private val index = new InvertedIndex()
+  private val index = InvertedIndex()
 
   def generateIndex(): InvertedIndex = {
     logger.info("Indexer started")

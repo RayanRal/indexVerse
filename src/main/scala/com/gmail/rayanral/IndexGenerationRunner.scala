@@ -37,7 +37,7 @@ object IndexGenerationRunner extends Logging {
         indexGenerator.generateIndex()
       }
       .reduce { (i1, i2) =>
-        i1.mergeInPlace(i2)
+        i1.merge(i2)
       }
   }
 

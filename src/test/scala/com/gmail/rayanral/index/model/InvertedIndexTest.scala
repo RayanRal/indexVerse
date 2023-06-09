@@ -32,7 +32,7 @@ class InvertedIndexTest extends AnyFlatSpec {
     index = index.add("word", "file")
     index = index.add("word2", "file2")
     index = index.add("word3", "file")
-    val docs = index.getDocumentsForTokens(Set("word", "word3"))
+    val docs = index.getDocumentsForAllTokens(Set("word", "word3"))
     docs.size shouldBe 1
     docs should contain("file")
   }
@@ -40,6 +40,19 @@ class InvertedIndexTest extends AnyFlatSpec {
   "invertedIndex" should "return empty when word doesn't exist" in {
     val docs = InvertedIndex().getDocumentsForToken("nonExistingWord")
     docs.size shouldBe 0
+  }
+
+  "invertedIndex" should "return True if word exists" in {
+    val token = "token"
+    InvertedIndex().add(token, "anyFile").containsWord(token) shouldBe true
+  }
+
+  "multiple invertedIndexes" should "contain all words when merged" in {
+    val idx1 = InvertedIndex().add("token1", "file1")
+    val idx2 = InvertedIndex().add("token2", "file2")
+    val mergedIndex = idx1.merge(idx2)
+    mergedIndex.containsWord("token1") shouldBe true
+    mergedIndex.containsWord("token2") shouldBe true
   }
 
 }
